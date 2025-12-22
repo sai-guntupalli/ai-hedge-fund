@@ -23,7 +23,7 @@ def add_common_args(
     parser.add_argument(
         "--tickers",
         type=str,
-        required=require_tickers,
+        required=False,
         help="Comma-separated list of stock ticker symbols (e.g., AAPL,MSFT,GOOGL)",
     )
     if include_analyst_flags:
@@ -221,6 +221,8 @@ class CLIInputs:
     margin_requirement: float
     show_reasoning: bool = False
     show_agent_graph: bool = False
+    output_file: Optional[str] = None
+    holdings_file: Optional[str] = None
     raw_args: Optional[argparse.Namespace] = None
 
 
@@ -259,6 +261,9 @@ def parse_cli_inputs(
         parser.add_argument("--show-reasoning", action="store_true", help="Show reasoning from each agent")
     if include_graph_flag:
         parser.add_argument("--show-agent-graph", action="store_true", help="Show the agent graph")
+    
+    parser.add_argument("--output", type=str, required=False, help="Path to save the output report (e.g., report.md)")
+    parser.add_argument("--holdings", type=str, required=False, help="Path to holdings CSV file")
 
     args = parser.parse_args()
 
@@ -271,6 +276,10 @@ def parse_cli_inputs(
     model_name, model_provider = select_model(getattr(args, "ollama", False), getattr(args, "model", None))
     start_date, end_date = resolve_dates(getattr(args, "start_date", None), getattr(args, "end_date", None), default_months_back=default_months_back)
 
+    # Validate that either tickers or holdings are provided
+    if require_tickers and not (args.tickers or getattr(args, "holdings", None)):
+        parser.error("At least one of --tickers or --holdings must be provided.")
+
     return CLIInputs(
         tickers=tickers,
         selected_analysts=selected_analysts,
@@ -282,6 +291,8 @@ def parse_cli_inputs(
         margin_requirement=getattr(args, "margin_requirement", 0.0),
         show_reasoning=getattr(args, "show_reasoning", False),
         show_agent_graph=getattr(args, "show_agent_graph", False),
+        output_file=getattr(args, "output", None),
+        holdings_file=getattr(args, "holdings", None),
         raw_args=args,
     )
 

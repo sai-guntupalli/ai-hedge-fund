@@ -12,9 +12,12 @@ from src.utils.display import print_trading_output
 from src.utils.analysts import ANALYST_ORDER, get_analyst_nodes
 from src.utils.progress import progress
 from src.utils.visualize import save_graph_as_png
-from src.cli.input import (
-    parse_cli_inputs,
-)
+from src.utils.reporting import generate_markdown_report
+from src.data.storage import HedgeFundDB
+from src.tools.api import get_financial_metrics, get_prices
+from src.cli.input import parse_cli_inputs
+
+from src.utils.portfolio_loader import load_holdings
 
 import argparse
 from datetime import datetime
@@ -141,6 +144,32 @@ if __name__ == "__main__":
 
     tickers = inputs.tickers
     selected_analysts = inputs.selected_analysts
+    
+    # Load holdings if provided
+    loaded_portfolio_data = None
+    if inputs.holdings_file:
+        try:
+            loaded_portfolio_data = load_holdings(inputs.holdings_file)
+            # Add tickers from holdings to the list (deduplicated)
+            tickers = list(set(tickers + loaded_portfolio_data['tickers']))
+            print(f"Loaded {len(loaded_portfolio_data['tickers'])} positions from {inputs.holdings_file}")
+        except Exception as e:
+            print(f"Error loading holdings file: {e}")
+            sys.exit(1)
+
+    if not tickers:
+        print("No tickers provided or found in holdings file. Exiting.")
+        sys.exit(0)
+
+    # If loading from holdings, verify we have a long enough history (5 years request)
+    start_date = inputs.start_date
+    if inputs.holdings_file and not inputs.raw_args.start_date:
+        # User didn't specify start date, but provided holdings. 
+        # Requirement: "price details for last 5 years"
+        # We override the default (which might be 3 months) to 5 years.
+        start_date = (datetime.now() - relativedelta(years=5)).strftime("%Y-%m-%d")
+        print(f"Holdings mode: Setting start date to {start_date} (5 years ago)")
+
 
     # Construct portfolio here
     portfolio = {
@@ -166,9 +195,15 @@ if __name__ == "__main__":
         },
     }
 
+    # Update portfolio with loaded positions
+    if loaded_portfolio_data:
+        for ticker, pos_data in loaded_portfolio_data['positions'].items():
+            if ticker in portfolio['positions']:
+                portfolio['positions'][ticker].update(pos_data)
+
     result = run_hedge_fund(
         tickers=tickers,
-        start_date=inputs.start_date,
+        start_date=start_date,
         end_date=inputs.end_date,
         portfolio=portfolio,
         show_reasoning=inputs.show_reasoning,
@@ -176,4 +211,48 @@ if __name__ == "__main__":
         model_name=inputs.model_name,
         model_provider=inputs.model_provider,
     )
-    print_trading_output(result)
+    
+    if inputs.output_file:
+        generate_markdown_report(
+            result,
+            tickers,
+            inputs.start_date,
+            inputs.end_date,
+            inputs.output_file
+        )
+    else:
+        print_trading_output(result)
+
+    # Save to DuckDB
+    try:
+        db = HedgeFundDB()
+        run_id = db.save_analysis_run(
+            tickers=tickers,
+            start_date=inputs.start_date,
+            end_date=inputs.end_date,
+            model_name=inputs.model_name,
+            model_provider=inputs.model_provider
+        )
+        
+        # Save Decisions
+        db.save_portfolio_decisions(run_id, result["decisions"])
+        
+        # Save Signals
+        db.save_agent_signals(run_id, result["analyst_signals"])
+        
+        # Save Metrics & Prices for each ticker
+        # We re-fetch here (cached) to ensure we store what matches the run context
+        for ticker in tickers:
+            try:
+                metrics = get_financial_metrics(ticker, inputs.end_date)
+                db.save_financial_metrics(run_id, ticker, metrics)
+                
+                prices = get_prices(ticker, inputs.start_date, inputs.end_date)
+                db.save_prices(run_id, ticker, prices)
+            except Exception as e:
+                print(f"Error saving data for {ticker}: {e}")
+                
+        db.close()
+        print(f"Analysis results saved to database (Run ID: {run_id})")
+    except Exception as e:
+        print(f"Error saving to DuckDB: {e}")

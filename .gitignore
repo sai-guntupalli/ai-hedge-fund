@@ -57,6 +57,7 @@ outputs/
 
 # Database files (users will have their own local databases)
 *.db
+*.csv
 *.db-journal
 *.db-wal
 *.db-shm

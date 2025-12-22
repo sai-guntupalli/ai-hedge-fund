@@ -82,6 +82,18 @@ FINANCIAL_DATASETS_API_KEY=your-financial-datasets-api-key
 
 **Financial Data**: Data for AAPL, GOOGL, MSFT, NVDA, and TSLA is free and does not require an API key. For any other ticker, you will need to set the `FINANCIAL_DATASETS_API_KEY` in the .env file.
 
+### 3. Choose Data Provider
+
+You can choose between two data providers:
+1. **Financial Datasets** (Default): Requires an API key for most tickers. High quality structured data.
+2. **YFinance**: Free, open-source data. Good for getting started without API keys.
+
+To use YFinance, set the `DATA_PROVIDER` environment variable in your `.env` file:
+```bash
+DATA_PROVIDER=yfinance
+```
+Or set it at runtime (see "How to Run").
+
 ## How to Run
 
 ### ⌨️ Command Line Interface
@@ -106,6 +118,28 @@ poetry install
 ```bash
 poetry run python src/main.py --ticker AAPL,MSFT,NVDA
 ```
+
+**Options:**
+- `--ticker`: Comma-separated list of stock tickers (e.g. `AAPL,MSFT`).
+- `--start-date`: Start date for analysis (YYYY-MM-DD).
+- `--end-date`: End date for analysis (YYYY-MM-DD).
+- `--show-reasoning`: Show detailed reasoning from agents.
+- `--output`: File path to save the analysis report (Markdown).
+- `--holdings`: Path to a JSON file containing portfolio holdings.
+
+**Example with Output Report:**
+```bash
+poetry run python src/main.py --ticker AAPL,MSFT,NVDA --output analysis_report.md
+```
+This generates a detailed Markdown report (`analysis_report.md`) including financial metrics, company descriptions, news, and agent signals.
+
+**Example with YFinance:**
+```bash
+DATA_PROVIDER=yfinance poetry run python src/main.py --ticker AAPL,MSFT,NVDA
+```
+
+**Data Persistence:**
+All analysis runs, decisions, and signals are automatically saved to a local DuckDB database (`hedge_fund.db`) for future reference.
 
 You can also specify a `--ollama` flag to run the AI hedge fund using local LLMs.
 

@@ -132,6 +132,7 @@ class CompanyFacts(BaseModel):
     sic_sector: str | None = None
     website_url: str | None = None
     weighted_average_shares: int | None = None
+    description: str | None = None
 
 
 class CompanyFactsResponse(BaseModel):
