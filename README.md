@@ -1,58 +1,58 @@
 # AI Hedge Fund
 
-This is a proof of concept for an AI-powered hedge fund.  The goal of this project is to explore the use of AI to make trading decisions.  This project is for **educational** purposes only and is not intended for real trading or investment.
+This is a proof of concept for an AI-powered hedge fund. The goal of this project is to explore the use of AI to make trading decisions. This project is for **educational** purposes only and is not intended for real trading or investment.
 
 This system employs several agents working together:
 
-1. Aswath Damodaran Agent - The Dean of Valuation, focuses on story, numbers, and disciplined valuation
-2. Ben Graham Agent - The godfather of value investing, only buys hidden gems with a margin of safety
-3. Bill Ackman Agent - An activist investor, takes bold positions and pushes for change
-4. Cathie Wood Agent - The queen of growth investing, believes in the power of innovation and disruption
-5. Charlie Munger Agent - Warren Buffett's partner, only buys wonderful businesses at fair prices
-6. Michael Burry Agent - The Big Short contrarian who hunts for deep value
-7. Mohnish Pabrai Agent - The Dhandho investor, who looks for doubles at low risk
-8. Peter Lynch Agent - Practical investor who seeks "ten-baggers" in everyday businesses
-9. Phil Fisher Agent - Meticulous growth investor who uses deep "scuttlebutt" research 
-10. Rakesh Jhunjhunwala Agent - The Big Bull of India
-11. Stanley Druckenmiller Agent - Macro legend who hunts for asymmetric opportunities with growth potential
-12. Warren Buffett Agent - The oracle of Omaha, seeks wonderful companies at a fair price
-13. Valuation Agent - Calculates the intrinsic value of a stock and generates trading signals
-14. Sentiment Agent - Analyzes market sentiment and generates trading signals
-15. Fundamentals Agent - Analyzes fundamental data and generates trading signals
-16. Technicals Agent - Analyzes technical indicators and generates trading signals
-17. Risk Manager - Calculates risk metrics and sets position limits
-18. Portfolio Manager - Makes final trading decisions and generates orders
+1.  **Valuation Agent** - Calculates the intrinsic value of a stock and generates trading signals.
+2.  **Sentiment Agent** - Analyzes market sentiment and generates trading signals.
+3.  **Fundamentals Agent** - Analyzes fundamental data and generates trading signals.
+4.  **Technicals Agent** - Analyzes technical indicators and generates trading signals.
+5.  **Guru Agents** - Mimics the strategies of legendary investors:
+    *   Aswath Damodaran, Ben Graham, Bill Ackman, Cathie Wood, Charlie Munger, Michael Burry, Mohnish Pabrai, Peter Lynch, Phil Fisher, Rakesh Jhunjhunwala, Stanley Druckenmiller, Warren Buffett.
+6.  **Risk Manager** - Calculates risk metrics and sets position limits.
+7.  **Portfolio Manager** - Makes final trading decisions and generates orders.
 
 <img width="1042" alt="Screenshot 2025-03-22 at 6 19 07 PM" src="https://github.com/user-attachments/assets/cbae3dcf-b571-490d-b0ad-3f0f035ac0d4" />
-
-Note: the system does not actually make any trades.
-
-[![Twitter Follow](https://img.shields.io/twitter/follow/virattt?style=social)](https://twitter.com/virattt)
 
 ## Disclaimer
 
 This project is for **educational and research purposes only**.
 
-- Not intended for real trading or investment
-- No investment advice or guarantees provided
-- Creator assumes no liability for financial losses
-- Consult a financial advisor for investment decisions
-- Past performance does not indicate future results
+-   Not intended for real trading or investment
+-   No investment advice or guarantees provided
+-   Creator assumes no liability for financial losses
+-   Consult a financial advisor for investment decisions
+-   Past performance does not indicate future results
 
 By using this software, you agree to use it solely for learning purposes.
 
 ## Table of Contents
-- [How to Install](#how-to-install)
-- [How to Run](#how-to-run)
-  - [⌨️ Command Line Interface](#️-command-line-interface)
-  - [🖥️ Web Application](#️-web-application)
-- [How to Contribute](#how-to-contribute)
-- [Feature Requests](#feature-requests)
-- [License](#license)
 
-## How to Install
+-   [Features](#features)
+-   [Installation](#installation)
+-   [Usage](#usage)
+    -   [Hedge Fund Simulation](#1-hedge-fund-simulation)
+    -   [10-K Report Analysis](#2-10-k-report-analysis)
+    -   [Backtesting](#3-backtesting)
+-   [Data Providers](#data-providers)
+-   [Project Structure](#project-structure)
+-   [Contributing](#how-to-contribute)
+-   [License](#license)
 
-Before you can run the AI Hedge Fund, you'll need to install it and set up your API keys. These steps are common to both the full-stack web application and command line interface.
+## Features
+
+*   **Multi-Agent Architecture**: Uses LangGraph to coordinate multiple specialized AI agents.
+*   **Fundamental & Technical Analysis**: Combines quantitative metrics with technical indicators.
+*   **Sentiment Analysis**: Incorporates news and insider trading signals.
+*   **10-K Report Analysis**: Automatically downloads and analyzes SEC 10-K filings using LLMs to extract strategic insights and financial metrics.
+*   **Portfolio Management**: Optimizes portfolio allocations based on risk constraints.
+*   **Data Persistence**:  Results, signals, and market data are automatically saved to a local **DuckDB** database (`hedge_fund.db`) for future analysis.
+*   **Reporting**: Generates detailed Markdown reports with analysis justification.
+
+## Installation
+
+This project uses [`uv`](https://github.com/astral-sh/uv) limit dependency management.
 
 ### 1. Clone the Repository
 
@@ -61,131 +61,119 @@ git clone https://github.com/virattt/ai-hedge-fund.git
 cd ai-hedge-fund
 ```
 
-### 2. Set up API keys
+### 2. Install Dependencies
+
+Ensure you have `uv` installed. If not:
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+Then align your environment:
+```bash
+uv sync
+```
+
+### 3. Set up API keys
 
 Create a `.env` file for your API keys:
+
 ```bash
-# Create .env file for your API keys (in the root directory)
 cp .env.example .env
 ```
 
-Open and edit the `.env` file to add your API keys:
-```bash
-# For running LLMs hosted by openai (gpt-4o, gpt-4o-mini, etc.)
-OPENAI_API_KEY=your-openai-api-key
+Edit `.env` and add your keys:
 
-# For getting financial data to power the hedge fund
-FINANCIAL_DATASETS_API_KEY=your-financial-datasets-api-key
+```bash
+# LLM Provider (at least one is required)
+OPENAI_API_KEY=your-key
+# ANTHROPIC_API_KEY=your-key
+# GROQ_API_KEY=your-key
+
+# Financial Data (Optional for big caps, required for others)
+FINANCIAL_DATASETS_API_KEY=your-key
 ```
 
-**Important**: You must set at least one LLM API key (e.g. `OPENAI_API_KEY`, `GROQ_API_KEY`, `ANTHROPIC_API_KEY`, or `DEEPSEEK_API_KEY`) for the hedge fund to work. 
+## Usage
 
-**Financial Data**: Data for AAPL, GOOGL, MSFT, NVDA, and TSLA is free and does not require an API key. For any other ticker, you will need to set the `FINANCIAL_DATASETS_API_KEY` in the .env file.
+### 1. Hedge Fund Simulation
 
-### 3. Choose Data Provider
+Run the main system to generate trading decisions for a list of tickers.
 
-You can choose between two data providers:
-1. **Financial Datasets** (Default): Requires an API key for most tickers. High quality structured data.
-2. **YFinance**: Free, open-source data. Good for getting started without API keys.
-
-To use YFinance, set the `DATA_PROVIDER` environment variable in your `.env` file:
 ```bash
-DATA_PROVIDER=yfinance
-```
-Or set it at runtime (see "How to Run").
-
-## How to Run
-
-### ⌨️ Command Line Interface
-
-You can run the AI Hedge Fund directly via terminal. This approach offers more granular control and is useful for automation, scripting, and integration purposes.
-
-<img width="992" alt="Screenshot 2025-01-06 at 5 50 17 PM" src="https://github.com/user-attachments/assets/e8ca04bf-9989-4a7d-a8b4-34e04666663b" />
-
-#### Quick Start
-
-1. Install Poetry (if not already installed):
-```bash
-curl -sSL https://install.python-poetry.org | python3 -
-```
-
-2. Install dependencies:
-```bash
-poetry install
-```
-
-#### Run the AI Hedge Fund
-```bash
-poetry run python src/main.py --ticker AAPL,MSFT,NVDA
+uv run src/main.py --ticker AAPL,MSFT,NVDA
 ```
 
 **Options:**
-- `--ticker`: Comma-separated list of stock tickers (e.g. `AAPL,MSFT`).
-- `--start-date`: Start date for analysis (YYYY-MM-DD).
-- `--end-date`: End date for analysis (YYYY-MM-DD).
-- `--show-reasoning`: Show detailed reasoning from agents.
-- `--output`: File path to save the analysis report (Markdown).
-- `--holdings`: Path to a JSON file containing portfolio holdings.
 
-**Example with Output Report:**
-```bash
-poetry run python src/main.py --ticker AAPL,MSFT,NVDA --output analysis_report.md
-```
-This generates a detailed Markdown report (`analysis_report.md`) including financial metrics, company descriptions, news, and agent signals.
+*   `--ticker`: Comma-separated list of symbols (e.g. `AAPL,MSFT`).
+*   `--start-date`: Start date for historical data (YYYY-MM-DD).
+*   `--end-date`: End date for historical data (YYYY-MM-DD).
+*   `--show-reasoning`: Print detailed agent reasoning to the console.
+*   `--output`: Save the analysis to a Markdown file (e.g. `--output report.md`).
+*   `--holdings`: Load initial portfolio from a JSON file (e.g. `--holdings portfolio.json`).
+*   `--model`: Specify LLM model (default: `gpt-4o`).
 
-**Example with YFinance:**
-```bash
-DATA_PROVIDER=yfinance poetry run python src/main.py --ticker AAPL,MSFT,NVDA
-```
-
-**Data Persistence:**
-All analysis runs, decisions, and signals are automatically saved to a local DuckDB database (`hedge_fund.db`) for future reference.
-
-You can also specify a `--ollama` flag to run the AI hedge fund using local LLMs.
+**Example with Output:**
 
 ```bash
-poetry run python src/main.py --ticker AAPL,MSFT,NVDA --ollama
+uv run src/main.py --ticker AAPL,MSFT --output outputs/analysis.md --show-reasoning
 ```
 
-You can optionally specify the start and end dates to make decisions over a specific time period.
+### 2. 10-K Report Analysis
+
+Download and analyze the latest 10-K annual report for a specific company using an LLM.
 
 ```bash
-poetry run python src/main.py --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01
+uv run src/scripts/analyze_10k.py AAPL
 ```
 
-#### Run the Backtester
+This will:
+1.  Fetch the latest 10-K URL from SEC EDGAR.
+2.  Download and cache the raw HTML to `data/10k/`.
+3.  Analyze the Business, Risks, MD&A, and Financial Statements sections.
+4.  Save a Markdown report to `outputs/10k_reports/`.
+
+**Options:**
+*   `--model`: Specify LLM model (default: `gpt-4o`).
+*   `--output`: Custom path for the output file.
+
+### 3. Backtesting
+
+Run a backtest simulation over a historical period.
+
 ```bash
-poetry run python src/backtester.py --ticker AAPL,MSFT,NVDA
+uv run backtester --ticker AAPL,MSFT,NVDA --start-date 2024-01-01 --end-date 2024-03-01
 ```
 
-**Example Output:**
-<img width="941" alt="Screenshot 2025-01-06 at 5 47 52 PM" src="https://github.com/user-attachments/assets/00e794ea-8628-44e6-9a84-8f8a31ad3b47" />
+## Data Providers
 
+You can choose between two data providers:
 
-Note: The `--ollama`, `--start-date`, and `--end-date` flags work for the backtester, as well!
+1.  **Financial Datasets** (Default): High quality structured data. Requires API Key for most symbols.
+2.  **YFinance**: Free data. Good for testing major US stocks.
 
-### 🖥️ Web Application
+To use YFinance, set it in `.env` or prepend to command:
 
-The new way to run the AI Hedge Fund is through our web application that provides a user-friendly interface. This is recommended for users who prefer visual interfaces over command line tools.
+```bash
+DATA_PROVIDER=yfinance uv run src/main.py --ticker AAPL
+```
 
-Please see detailed instructions on how to install and run the web application [here](https://github.com/virattt/ai-hedge-fund/tree/main/app).
+## Project Structure
 
-<img width="1721" alt="Screenshot 2025-06-28 at 6 41 03 PM" src="https://github.com/user-attachments/assets/b95ab696-c9f4-416c-9ad1-51feb1f5374b" />
-
+*   `src/agents/`: Definitions for all 18+ investment agents.
+*   `src/tools/`: Utilities for fetching market data (prices, financials, SEC filings).
+*   `src/graph/`: LangGraph workflow definitions.
+*   `src/scripts/`: Standalone scripts (like `analyze_10k.py`).
+*   `data/`: Storage for cached 10-K files and the DuckDB database.
+*   `outputs/`: Generated reports.
 
 ## How to Contribute
 
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
-
-**Important**: Please keep your pull requests small and focused.  This will make it easier to review and merge.
-
-## Feature Requests
-
-If you have a feature request, please open an [issue](https://github.com/virattt/ai-hedge-fund/issues) and make sure it is tagged with `enhancement`.
+1.  Fork the repository
+2.  Create a feature branch
+3.  Commit your changes
+4.  Push to the branch
+5.  Create a Pull Request
 
 ## License
 
